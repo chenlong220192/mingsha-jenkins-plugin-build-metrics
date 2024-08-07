@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.17</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>build-metrics</artifactId>
+  <version>1.0.0</version>
+  <packaging>hpi</packaging>
+  <name>build metrics</name>
+  <description>Expose Jenkins build metrics in text format</description>
+  <url>https://github.com/chenlong220192/</url>
+  <inceptionYear>2023</inceptionYear>
+
+    <properties>
+      <jenkins.version>2.271</jenkins.version>
+      <java.level>8</java.level>
+      <jenkins.junit.version>1.28</jenkins.junit.version>
+      <httpcore.version>4.4.14</httpcore.version>
+      <slf4j.version>1.7.30</slf4j.version>
+    </properties>
+
+    <licenses>
+    </licenses>
+
+    <developers>
+      <developer>
+        <id>devguy</id>
+        <name>chenlong220192@gmail.com</name>
+      </developer>
+    </developers>
+
+    <repositories>
+      <repository>
+        <id>repo.jenkins-ci.org</id>
+        <url>https://repo.jenkins-ci.org/public/</url>
+      </repository>
+    </repositories>
+    <pluginRepositories>
+      <pluginRepository>
+        <id>repo.jenkins-ci.org</id>
+        <url>https://repo.jenkins-ci.org/public/</url>
+      </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>junit</artifactId>
+        <version>${jenkins.junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <!-- fastjson -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>1.2.70</version>
+      </dependency>
+    </dependencies>
+
+  </project>

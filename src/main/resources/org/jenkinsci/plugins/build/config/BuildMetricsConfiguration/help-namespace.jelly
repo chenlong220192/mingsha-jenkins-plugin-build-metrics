@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <div>
+    <p>
+      The namespace where the build metrics should be provided.
+    </p>
+  </div>
+</j:jelly>
