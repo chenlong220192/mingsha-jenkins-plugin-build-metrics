@@ -1,0 +1,69 @@
+pipeline {
+    agent { label 'linux' }
+    tools {
+        jdk 'jdk17'
+    }
+    environment {
+        // SonarQube 服务器名称（需在 Jenkins 全局配置中设置）
+        SONARQUBE_SERVER = 'SonarQube' // 替换为你的 SonarQube 配置名
+        SONAR_PROJECT_KEY = 'mingsha-jenkins-plugin-build-metrics'
+        SONAR_PROJECT_NAME = 'mingsha Jenkins Plugin Build Metrics'
+        SONAR_PROJECT_VERSION = '1.1.0'
+        SONAR_SCANNER_OPTS = ''
+        SONAR_CMD = "./mvnw sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.projectName='${SONAR_PROJECT_NAME}' -Dsonar.projectVersion=${SONAR_PROJECT_VERSION} ${SONAR_SCANNER_OPTS}"
+        // 邮件通知相关
+        EMAIL_RECIPIENTS = "your@email.com" // 直接填写收件人，多个用逗号分隔
+        EMAIL_SUBJECT_SUCCESS = "✅ SonarQube 扫描成功"
+        EMAIL_SUBJECT_FAILURE = "❌ SonarQube 扫描失败"
+        EMAIL_BODY_SUCCESS = """
+            <h2 style='color:green;'>✅ SonarQube 扫描成功</h2>
+            <p>🎉 恭喜，SonarQube 静态代码扫描已通过！</p>
+            <ul>
+                <li><b>项目名称：</b> ${SONAR_PROJECT_NAME}</li>
+                <li><b>构建编号：</b> ${BUILD_NUMBER}</li>
+                <li><b>分支：</b> ${BRANCH_NAME}</li>
+                <li><b>触发人：</b> ${BUILD_USER}</li>
+                <li><b>构建时间：</b> ${BUILD_TIMESTAMP}</li>
+            </ul>
+            <p>🔗 <a href='${BUILD_URL}'>查看本次构建详情</a></p>
+            <hr/>
+            <p style='color:#888;'>本邮件由 Jenkins 自动发送，请勿回复。</p>
+        """
+        EMAIL_BODY_FAILURE = """
+            <h2 style='color:red;'>❌ SonarQube 扫描失败</h2>
+            <p>😢 很遗憾，SonarQube 静态代码扫描未通过，请及时关注并处理。</p>
+            <ul>
+                <li><b>项目名称：</b> ${SONAR_PROJECT_NAME}</li>
+                <li><b>构建编号：</b> ${BUILD_NUMBER}</li>
+                <li><b>分支：</b> ${BRANCH_NAME}</li>
+                <li><b>触发人：</b> ${BUILD_USER}</li>
+                <li><b>构建时间：</b> ${BUILD_TIMESTAMP}</li>
+            </ul>
+            <p>🔗 <a href='${BUILD_URL}'>查看失败详情</a></p>
+            <hr/>
+            <p style='color:#888;'>本邮件由 Jenkins 自动发送，请勿回复。</p>
+        """
+    }
+    stages {
+        stage('SonarQube 代码扫描') {
+            steps {
+                echo "\u001B[34m🔍 开始 SonarQube 静态代码扫描...\u001B[0m"
+                sh 'java -version'
+                sh '${SONAR_CMD}'
+            }
+        }
+    }
+    post {
+        success {
+            echo "\u001B[32m✅ SonarQube 扫描成功，发送成功邮件通知...\u001B[0m"
+            mail to: "${EMAIL_RECIPIENTS}", subject: "${EMAIL_SUBJECT_SUCCESS}", body: "${EMAIL_BODY_SUCCESS}", mimeType: 'text/html'
+        }
+        failure {
+            echo "\u001B[31m❌ SonarQube 扫描失败，发送失败邮件通知...\u001B[0m"
+            mail to: "${EMAIL_RECIPIENTS}", subject: "${EMAIL_SUBJECT_FAILURE}", body: "${EMAIL_BODY_FAILURE}", mimeType: 'text/html'
+        }
+        always {
+            cleanWs()
+        }
+    }
+} 

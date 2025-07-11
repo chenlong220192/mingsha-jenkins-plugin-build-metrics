@@ -14,7 +14,8 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 
 /**
- * @author chenlong
+ * @author mingsha
+ * @date 2025-07-10
  */
 @Extension
 public class BuildMetricsAsyncWorker extends AsyncPeriodicWork {
@@ -23,30 +24,49 @@ public class BuildMetricsAsyncWorker extends AsyncPeriodicWork {
 
     private BuildMetrics BuildMetrics;
 
+    /**
+     * 构造方法，初始化异步采集任务。
+     */
     public BuildMetricsAsyncWorker() {
         super("build_metrics_async_worker");
     }
 
+    /**
+     * 注入 BuildMetrics 实例。
+     * @param BuildMetrics 构建指标服务
+     */
     @Inject
     public void setBuildMetrics(BuildMetrics BuildMetrics) {
         this.BuildMetrics = BuildMetrics;
     }
 
+    /**
+     * 获取采集任务的执行周期（毫秒）。
+     * @return 周期（毫秒）
+     */
     @Override
     public long getRecurrencePeriod() {
         long collectingMetricsPeriodInMillis =
                 TimeUnit.SECONDS.toMillis(BuildMetricsConfiguration.get().getCollectingBuildMetricsPeriodInSeconds());
-        logger.debug("Setting recurrence period to {} in milliseconds", collectingMetricsPeriodInMillis);
+        logger.info("设置采集周期为 {} 毫秒", collectingMetricsPeriodInMillis);
         return collectingMetricsPeriodInMillis;
     }
 
+    /**
+     * 执行采集任务。
+     * @param taskListener 任务监听器
+     */
     @Override
     public void execute(TaskListener taskListener) {
-        logger.debug("Collecting Jenkins build info");
+        logger.info("开始采集 Jenkins 构建信息");
         BuildMetrics.collectMetrics();
-        logger.debug("Jenkins Build info collected successfully");
+        logger.info("Jenkins 构建信息采集完成");
     }
 
+    /**
+     * 获取日志级别。
+     * @return 日志级别
+     */
     @Override
     protected Level getNormalLoggingLevel() {
         return Level.FINE;

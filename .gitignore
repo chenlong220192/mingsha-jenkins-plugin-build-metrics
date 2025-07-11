@@ -1,53 +1,55 @@
-# Compiled class file
+# === Java & Maven ===
 *.class
-*.classpath
-*.factorypath
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.ear
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+*.log
 hs_err_pid*
+target/
+flattened-pom.xml
 
-# IDE Files #
+# === IDE & Editor ===
 *.iml
-.idea
 .idea/
 .project
-.settings
-target
-.DS_Store
+.classpath
+.factorypath
+.settings/
+*.sublime*
+*.vscode/
 
-# temp ignore
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Temporary & Patch Files ===
+*.tmp
+*.temp
 *.cache
 *.diff
 *.patch
-*.tmp
 
-# Maven ignore
-.flattened-pom.xml
+# === BlueJ & J2ME ===
+*.ctxt
+.mtj.tmp/
 
-# local files
+# === Local/Config Files ===
 config/*.yml
 config/*.xml
 config/jvm.options
 
-# git submodule
-deploy
+# === Git Submodule/Deploy ===
+deploy/
 
-# jenkins ws
-work
+# === Jenkins/CI/CD ===
+work/
+workspace/
+.last_success
+.last_failure
+
+# === Others ===
+*.swp
+*.bak

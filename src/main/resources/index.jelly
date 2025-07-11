@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<div>
+Jenkins Build Metrics Plugin expose an endpoint (default /build/metrics)
+</div>
+

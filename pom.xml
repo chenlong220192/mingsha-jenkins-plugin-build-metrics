@@ -1,90 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>4.17</version>
-    <relativePath />
-  </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>5.9</version>
+        <relativePath/>
+    </parent>
 
-  <artifactId>build-metrics</artifactId>
-  <version>1.0.0</version>
-  <packaging>hpi</packaging>
-  <name>build metrics</name>
-  <description>Expose Jenkins build metrics in text format</description>
-  <url>https://github.com/chenlong220192/</url>
-  <inceptionYear>2023</inceptionYear>
+    <artifactId>mingsha-jenkins-plugin-build-metrics</artifactId>
+    <version>1.1.0</version>
+    <packaging>hpi</packaging>
+    <name>mingsha Job build metrics</name>
+    <description>Expose Jenkins Job build metrics in text format</description>
+    <url>https://github.com/chenlong220192/mingsha-jenkins-plugin-build-metrics</url>
+    <inceptionYear>2025</inceptionYear>
 
     <properties>
-      <jenkins.version>2.271</jenkins.version>
-      <java.level>8</java.level>
-      <jenkins.junit.version>1.28</jenkins.junit.version>
-      <httpcore.version>4.4.14</httpcore.version>
-      <slf4j.version>1.7.30</slf4j.version>
+        <jenkins.version>2.501</jenkins.version>
+        <java.version>17</java.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <fastjson2.version>2.0.56</fastjson2.version>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <mockito.version>5.2.0</mockito.version>
+        <plugin.parent.version>5.9</plugin.parent.version>
+        <bom-2.387.x.version>2543.vfb_1a_5fb_9496d</bom-2.387.x.version>
+        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+        <maven.hpi.plugin.version>3.44</maven.hpi.plugin.version>
     </properties>
 
-    <licenses>
-    </licenses>
-
-    <developers>
-      <developer>
-        <id>devguy</id>
-        <name>chenlong220192@gmail.com</name>
-      </developer>
-    </developers>
-
-    <repositories>
-      <repository>
-        <id>repo.jenkins-ci.org</id>
-        <url>https://repo.jenkins-ci.org/public/</url>
-      </repository>
-    </repositories>
-    <pluginRepositories>
-      <pluginRepository>
-        <id>repo.jenkins-ci.org</id>
-        <url>https://repo.jenkins-ci.org/public/</url>
-      </pluginRepository>
-    </pluginRepositories>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.387.x</artifactId>
+                <version>${bom-2.387.x.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${httpcore.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>junit</artifactId>
-        <version>${jenkins.junit.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>log4j-over-slf4j</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-
-      <!-- fastjson -->
-      <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>fastjson</artifactId>
-        <version>1.2.70</version>
-      </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
-  </project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jenkins-ci.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <version>${maven.hpi.plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
