@@ -3,42 +3,42 @@ package org.jenkinsci.plugins.build.util;
 import org.jenkinsci.plugins.build.config.BuildMetricsConfiguration;
 
 /**
- * Jenkins 构建指标配置工具类。
+ * Utility class for accessing Build Metrics configuration.
  * <p>
- * 提供获取全局配置参数的便捷方法。
+ * Provides convenient methods to retrieve global configuration parameters.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
 public class ConfigurationUtils {
 
     /**
-     * 工具类构造方法，禁止实例化。
+     * Private constructor - prevents instantiation.
      */
     private ConfigurationUtils() {}
 
     /**
-     * 获取当前命名空间。
+     * Returns the current namespace.
      * <p>
-     * 从全局配置中获取插件使用的命名空间，
-     * 用于区分不同环境或来源的指标数据。
+     * Retrieves the plugin namespace from global configuration,
+     * used to distinguish metrics from different environments or sources.
      * </p>
-     * @return 命名空间字符串
+     * @return the namespace string
      */
     public static String getNamespace() {
         return BuildMetricsConfiguration.get().getNamespace();
     }
 
     /**
-     * 获取采集构建指标的时间窗口（分钟）。
+     * Returns the collection time window in minutes.
      * <p>
-     * 从全局配置中获取采集时间窗口，
-     * 用于过滤只采集指定时间范围内的构建数据。
+     * Retrieves the time window from global configuration,
+     * used to filter builds within a specific time range.
      * </p>
-     * @return 时间窗口（分钟）
+     * @return the time window in minutes
      */
     public static Long getCollectingBuildMetricsMinutes() {
         return BuildMetricsConfiguration.get().getCollectingBuildMetricsMinutes();
     }
-
 }

@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.build.service.impl;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.fastjson2.JSON;
@@ -12,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Jenkins 构建指标采集服务默认实现。
+ * Default implementation of the BuildMetrics service.
  * <p>
- * 负责定时或手动采集 Jenkins Job/Build 的相关指标，并缓存为 JSON 字符串。
+ * Handles periodic or manual collection of Jenkins Job/Build metrics,
+ * and caches the result as a JSON string for efficient retrieval.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
@@ -26,23 +26,23 @@ public class DefaultBuildMetrics implements BuildMetrics {
     private final AtomicReference<String> cachedMetrics;
 
     /**
-     * 构造方法，初始化缓存对象。
+     * Constructor - initializes the cache.
      */
     public DefaultBuildMetrics() {
         this.cachedMetrics = new AtomicReference<>("");
     }
 
     /**
-     * 获取缓存对象（仅供内部使用）。
-     * @return 缓存的指标数据
+     * Returns the cache reference (for internal use only).
+     * @return the cached metrics AtomicReference
      */
     public AtomicReference<String> getCachedMetrics() {
         return cachedMetrics;
     }
 
     /**
-     * 获取当前缓存的构建指标数据。
-     * @return 构建指标 JSON 字符串
+     * Returns the currently cached build metrics data.
+     * @return the build metrics as a JSON string
      */
     @Override
     public String getMetrics() {
@@ -50,34 +50,29 @@ public class DefaultBuildMetrics implements BuildMetrics {
     }
 
     /**
-     * 采集 Jenkins 构建指标，并更新缓存。
+     * Collects Jenkins build metrics and updates the cache.
      */
     @Override
     public void collectMetrics() {
-        logger.info("开始采集构建指标");
-        try (StringWriter buffer = new StringWriter()) {
-            final long start = System.currentTimeMillis();
-            BuildMetricsVO buildMetricsVO = new JobCollector().collect();
-            logger.info("构建指标采集完成，耗时：{} ms", System.currentTimeMillis() - start);
-            buffer.write(getJsonStr(buildMetricsVO));
-            cachedMetrics.set(buffer.toString());
-        } catch (IOException e) {
-            logger.error("采集构建指标时发生IO异常", e);
-        }
+        logger.info("Starting build metrics collection");
+        final long start = System.currentTimeMillis();
+        BuildMetricsVO buildMetricsVO = new JobCollector().collect();
+        String jsonStr = getJsonStr(buildMetricsVO);
+        cachedMetrics.set(jsonStr != null ? jsonStr : "");
+        logger.info("Build metrics collection completed in {} ms", System.currentTimeMillis() - start);
     }
 
     /**
-     * 将对象序列化为 JSON 字符串。
-     * @param object 需要序列化的对象
-     * @return JSON 字符串
+     * Serializes an object to a JSON string.
+     * @param object the object to serialize
+     * @return the JSON string, or null if serialization fails
      */
     public static String getJsonStr(Object object) {
         try {
             return JSON.toJSONString(object);
         } catch (Exception e) {
-            logger.error("JSON序列化失败", e);
+            logger.error("JSON serialization failed", e);
             return null;
         }
     }
-
 }

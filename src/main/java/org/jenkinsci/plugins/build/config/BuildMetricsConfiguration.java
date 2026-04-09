@@ -19,15 +19,17 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Jenkins 构建指标插件全局配置。
+ * Global configuration for the Jenkins Build Metrics plugin.
  * <p>
- * 用于管理插件的命名空间、采集周期、采集窗口等全局参数，
- * 支持 Jenkins 全局配置界面动态加载和持久化。
+ * Manages plugin-wide settings including namespace, collection period, and time window.
+ * Supports dynamic loading from and persistence to Jenkins configuration.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
 @Extension(dynamicLoadable = YesNoMaybe.NO)
+@SuppressWarnings("deprecation")
 public class BuildMetricsConfiguration extends GlobalConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildMetricsConfiguration.class);
@@ -44,19 +46,32 @@ public class BuildMetricsConfiguration extends GlobalConfiguration {
     private Long collectingBuildMetricsPeriodInSeconds = null;
 
     /**
-     * 构造方法，初始化全局配置。
+     * Constructor - initializes configuration with defaults if not loaded.
      */
     public BuildMetricsConfiguration() {
         load();
-        setPath(urlName);
-        setNamespace(namespace);
-        setCollectingBuildMetricsMinutes(collectingBuildMetricsMinutes);
-        setCollectingBuildMetricsPeriodInSeconds(collectingBuildMetricsPeriodInSeconds);
+        // Initialize defaults (save is handled by Jenkins automatically)
+        if (urlName == null) {
+            urlName = DEFAULT_ENDPOINT;
+        }
+        if (namespace == null) {
+            namespace = DEFAULT_NAMESPACE;
+        }
+        if (collectingBuildMetricsMinutes == null) {
+            collectingBuildMetricsMinutes = DEFAULT_COLLECTING_MINUTES;
+        }
+        if (collectingBuildMetricsPeriodInSeconds == null) {
+            collectingBuildMetricsPeriodInSeconds = DEFAULT_COLLECTING_PERIOD_IN_SECONDS;
+        }
+        // Parse URL name from path
+        urlName = urlName.split("/")[0];
+        List<String> pathParts = Arrays.asList(urlName.split("/"));
+        additionalPath = (pathParts.size() > 1 ? "/" : "") + StringUtils.join(pathParts.subList(1, pathParts.size()), "/");
     }
 
     /**
-     * 获取插件全局配置实例。
-     * @return BuildMetricsConfiguration 实例
+     * Returns the global configuration singleton instance.
+     * @return the BuildMetricsConfiguration instance
      */
     public static BuildMetricsConfiguration get() {
         Descriptor configuration = Jenkins.get().getDescriptor(BuildMetricsConfiguration.class);
@@ -65,141 +80,134 @@ public class BuildMetricsConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        // 设置基本配置项
+        // Set basic configuration items
         setPath(json.getString("path"));
         setNamespace(json.getString("namespace"));
         setCollectingBuildMetricsPeriodInSeconds(json.getLong("collectingBuildMetricsPeriodInSeconds"));
         setCollectingBuildMetricsMinutes(json.getLong("collectingBuildMetricsMinutes"));
 
-        // 验证并重新设置配置值
+        // Validate and reset configuration values
         collectingBuildMetricsMinutes = validateCollectingBuildMetricsMinutes(json);
         collectingBuildMetricsPeriodInSeconds = validateCollectingBuildMetricsPeriodInSeconds(json);
 
-        // 保存配置到磁盘
+        // Save configuration to disk
         save();
         return super.configure(req, json);
     }
 
     /**
-     * 获取路径。
-     * @return 路径
+     * Returns the full configured path.
+     * @return the path
      */
     public String getPath() {
         return StringUtils.isEmpty(additionalPath) ? urlName : urlName + "" + additionalPath;
     }
 
     /**
-     * 设置路径。
-     * @param path 路径
+     * Sets the API endpoint path.
+     * @param path the path to set
      */
     public void setPath(String path) {
         if (path == null) {
-            // 使用默认端点路径
+            // Use default endpoint path
             path = DEFAULT_ENDPOINT;
-        } else {
-            // 获取当前路径（这里可能有逻辑问题，应该是 path 本身）
-            path = getPath();
         }
-        // 提取 URL 名称（路径的第一部分）
+        // Extract URL name (first part of path)
         urlName = path.split("/")[0];
-        // 解析路径各部分
+        // Parse path parts
         List<String> pathParts = Arrays.asList(path.split("/"));
-        // 构建附加路径（除第一部分外的所有部分）
+        // Build additional path (all parts except the first)
         additionalPath = (pathParts.size() > 1 ? "/" : "") + StringUtils.join(pathParts.subList(1, pathParts.size()), "/");
-        // 保存配置
-        save();
+        // Note: save() is called by configure() method for consistency
     }
 
     /**
-     * 获取命名空间。
-     * @return 命名空间
+     * Returns the namespace for metrics organization.
+     * @return the namespace
      */
     public String getNamespace() {
         return namespace;
     }
 
     /**
-     * 设置命名空间。
-     * @param namespace 命名空间
+     * Sets the namespace for metrics organization.
+     * @param namespace the namespace to set
      */
     public void setNamespace(String namespace) {
         if (namespace == null) {
-            // 使用默认命名空间
+            // Use default namespace
             namespace = DEFAULT_NAMESPACE;
         }
         this.namespace = namespace;
-        // 保存配置
-        save();
+        // Note: save() is called by configure() method for consistency
     }
 
     /**
-     * 获取采集周期（秒）。
-     * @return 采集周期（秒）
+     * Returns the collection period in seconds.
+     * @return the collection period in seconds
      */
     public long getCollectingBuildMetricsPeriodInSeconds() {
         return collectingBuildMetricsPeriodInSeconds;
     }
 
     /**
-     * 设置采集周期（秒）。
-     * @param collectingMetricsPeriodInSeconds 采集周期（秒）
+     * Sets the collection period in seconds.
+     * @param collectingMetricsPeriodInSeconds the period in seconds
      */
     public void setCollectingBuildMetricsPeriodInSeconds(Long collectingMetricsPeriodInSeconds) {
         if (collectingMetricsPeriodInSeconds == null) {
-            // 使用默认采集周期
+            // Use default collection period
             this.collectingBuildMetricsPeriodInSeconds = DEFAULT_COLLECTING_PERIOD_IN_SECONDS;
         } else {
-            // 使用用户设置的采集周期
+            // Use user-specified collection period
             this.collectingBuildMetricsPeriodInSeconds = collectingMetricsPeriodInSeconds;
         }
-        // 保存配置
-        save();
+        // Note: save() is called by configure() method for consistency
     }
 
     /**
-     * 获取采集时间窗口（分钟）。
-     * @return 采集时间窗口（分钟）
+     * Returns the collection time window in minutes.
+     * @return the time window in minutes
      */
     public long getCollectingBuildMetricsMinutes() {
         return collectingBuildMetricsMinutes;
     }
 
     /**
-     * 设置采集时间窗口（分钟）。
-     * @param collectingBuildMetricsMinutes 采集时间窗口（分钟）
+     * Sets the collection time window in minutes.
+     * @param collectingBuildMetricsMinutes the time window in minutes
      */
     public void setCollectingBuildMetricsMinutes(Long collectingBuildMetricsMinutes) {
         if (collectingBuildMetricsMinutes == null) {
-            // 使用默认采集时间窗口
+            // Use default collection time window
             this.collectingBuildMetricsMinutes = DEFAULT_COLLECTING_MINUTES;
         } else {
-            // 使用用户设置的采集时间窗口
+            // Use user-specified collection time window
             this.collectingBuildMetricsMinutes = collectingBuildMetricsMinutes;
         }
-        // 保存配置
-        save();
+        // Note: save() is called by configure() method for consistency
     }
 
     /**
-     * 获取 URL 名称。
-     * @return URL 名称
+     * Returns the URL name (first segment of the path).
+     * @return the URL name
      */
     public String getUrlName() {
         return urlName;
     }
 
     /**
-     * 获取附加路径。
-     * @return 附加路径
+     * Returns the additional path (path after the URL name).
+     * @return the additional path
      */
     public String getAdditionalPath() {
         return additionalPath;
     }
 
     /**
-     * 校验路径参数。
-     * @param value 路径参数
-     * @return 校验结果
+     * Validates the path parameter from the configuration form.
+     * @param value the path value to validate
+     * @return validation result
      */
     public FormValidation doCheckPath(@QueryParameter String value) {
         if (StringUtils.isEmpty(value)) {
@@ -210,10 +218,10 @@ public class BuildMetricsConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * 校验采集时间窗口参数。
-     * @param json 配置 JSON
-     * @return 校验后的采集时间窗口
-     * @throws FormException 校验失败时抛出
+     * Validates the collecting time window parameter.
+     * @param json the configuration JSON
+     * @return the validated time window value
+     * @throws FormException if validation fails
      */
     private Long validateCollectingBuildMetricsMinutes(JSONObject json) throws FormException {
         try {
@@ -228,10 +236,10 @@ public class BuildMetricsConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * 校验采集周期参数。
-     * @param json 配置 JSON
-     * @return 校验后的采集周期
-     * @throws FormException 校验失败时抛出
+     * Validates the collection period parameter.
+     * @param json the configuration JSON
+     * @return the validated period value
+     * @throws FormException if validation fails
      */
     private Long validateCollectingBuildMetricsPeriodInSeconds(JSONObject json) throws FormException {
         try {
@@ -244,6 +252,4 @@ public class BuildMetricsConfiguration extends GlobalConfiguration {
         }
         throw new FormException("CollectingBuildMetricsPeriodInSeconds must be a positive integer", "collectingBuildMetricsPeriodInSeconds");
     }
-
-
 }

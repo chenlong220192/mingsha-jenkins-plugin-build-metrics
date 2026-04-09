@@ -10,16 +10,27 @@
 hs_err_pid*
 target/
 flattened-pom.xml
+pom.xml.releaseBackup
+release.properties
+dependency-reduced-pom.xml
+
+# === Maven Wrapper ===
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
 
 # === IDE & Editor ===
 *.iml
 .idea/
+*.iws
+*.ipr
 .project
 .classpath
 .factorypath
 .settings/
 *.sublime*
-*.vscode/
+.vscode/
+*.swp
+*.bak
 
 # === OS Files ===
 .DS_Store
@@ -50,6 +61,9 @@ workspace/
 .last_success
 .last_failure
 
+# === SDKMAN (local config, do NOT commit) ===
+# .sdkman/  # Uncomment if you want to ignore SDKMAN config
+
 # === Others ===
-*.swp
-*.bak
+*.orig
+*.rej

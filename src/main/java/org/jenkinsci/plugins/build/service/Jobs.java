@@ -6,30 +6,29 @@ import hudson.model.Job;
 import jenkins.model.Jenkins;
 
 /**
- * Jenkins Job 工具类。
+ * Utility class for accessing Jenkins Jobs.
  * <p>
- * 提供获取 Jenkins 实例下所有 Job 的便捷方法。
+ * Provides convenient methods for retrieving all jobs from the Jenkins instance.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
 public class Jobs {
 
     /**
-     * 工具类构造方法，禁止实例化。
+     * Private constructor - prevents instantiation.
      */
     private Jobs() {}
 
     /**
-     * 获取 Jenkins 实例下的所有 Job。
+     * Retrieves all jobs from the Jenkins instance.
      * <p>
-     * 通过 Jenkins API 获取当前实例中所有类型的 Job，
-     * 包括自由风格项目、流水线项目等。
+     * Gets all job types including freestyle projects, pipeline projects, etc.
      * </p>
-     * @return Job 列表，如果没有 Job 返回空列表
+     * @return a list of all jobs, or an empty list if no jobs exist
      */
     public static List<Job> getAllJobs() {
         return Jenkins.get().getAllItems(Job.class);
     }
-
 }

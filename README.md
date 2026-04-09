@@ -1,104 +1,224 @@
 # mingsha Jenkins Plugin Build Metrics
 
-> Jenkins 构建指标采集与导出插件
+> Jenkins Build Metrics Collection and Export Plugin
+
+[![Jenkins](https://img.shields.io/badge/Jenkins-2.558+-blue.svg)](https://jenkins.io/)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://www.java.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 ---
 
-## 项目简介
+## Overview
 
-本插件用于采集 Jenkins Job 及其构建历史的详细指标信息，支持定时与手动采集，并以文本格式对外暴露，便于监控、分析与集成。
-
----
-
-## 主要特性
-- 支持采集所有 Job 的构建历史、状态、参数、结果、触发人等信息
-- 指标数据可通过 REST API 导出，支持 Prometheus 等系统采集
-- 支持异步定时采集与手动触发采集
-- 采集窗口、命名空间等参数可全局配置
-- 完善的权限校验与安全控制
-- 代码结构现代化，注释规范，单元测试覆盖
-- 支持 SonarQube 静态代码扫描
+This plugin collects detailed metrics from Jenkins Jobs and their build history, supporting both scheduled and manual collection. Metrics are exposed in text format via REST API for easy integration with monitoring systems like Prometheus.
 
 ---
 
-## 安装与运行
+## Features
 
-### 依赖环境
-- Jenkins 2.501+
-- JDK 17
+- Collect build history, status, parameters, results, and trigger information for all Jobs
+- Export metrics via REST API for Prometheus and other monitoring systems
+- Support async scheduled collection and manual trigger
+- Configurable collection window, namespace, and other global parameters
+- Proper permission validation and security controls
+- Modern code structure with comprehensive Javadoc comments
+- Unit test coverage with JUnit 5 + Mockito
+- SonarQube static code analysis support
+
+---
+
+## Requirements
+
+- Jenkins 2.558+
+- **JDK 21+** (required by hpi-plugin 3.61+)
 - Maven 3.6+
 
-### 本地运行（开发调试）
-```sh
+---
+
+## Quick Start
+
+### Build
+
+> **Note:** JDK 21+ is required to build this plugin.
+
+```bash
+# Using Maven wrapper (recommended)
+./mvnw clean package
+
+# Or using system Maven
+mvn clean package
+
+# Ensure Java 21 is available
+java -version  # Should show 21.x
+```
+
+The plugin package will be generated at `target/*.hpi`.
+
+### Run Locally (Development)
+
+```bash
 make run
 ```
 
-### 打包
-```sh
-make package
+### Install to Jenkins
+
+1. Go to Jenkins Dashboard → Manage Jenkins → Plugin Manager → Advanced
+2. Upload the `target/*.hpi` file
+3. Restart Jenkins
+
+---
+
+## Configuration
+
+The plugin supports global configuration (path, namespace, collection period, collection window, etc.).
+
+Navigate to: **Manage Jenkins → System → Build Metrics**
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| Path | API endpoint path | `build/metrics` |
+| Namespace | Metrics namespace for organization | `default` |
+| Collection Period | How often to collect (seconds) | `120` (2 minutes) |
+| Collection Window | Time window for builds to collect (minutes) | `60` (1 hour) |
+
+---
+
+## API Reference
+
+### Get Metrics
+
 ```
-生成的插件包位于 `target/*.hpi`。
+GET /{plugin-url}/metrics
+```
 
-### 安装到 Jenkins
-1. 进入 Jenkins 管理后台 → 插件管理 → 高级 → 上传插件
-2. 选择 `target/*.hpi` 文件上传并重启 Jenkins
+**Permissions:** Requires `ADMINISTER` or `READ` permission.
+
+**Response:**
+```
+Content-Type: text/plain; charset=utf-8
+Cache-Control: must-revalidate,no-cache,no-store
+```
+
+**Example Response:**
+```json
+{
+  "namespace": "default",
+  "jobs": [
+    {
+      "jobName": "my-pipeline",
+      "builds": [
+        {
+          "queueId": "123",
+          "jobId": "45",
+          "startMillis": "1712500000000",
+          "duration": "60000",
+          "result": "SUCCESS",
+          "runner": "john.doe"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Manual Collection Trigger
+
+```
+POST /{plugin-url}/collect
+```
+
+**Permissions:** Requires `ADMINISTER` permission or valid API Token.
+
+**Response:** HTTP 200 on success, 500 on failure.
 
 ---
 
-## 配置说明
-- 插件支持全局配置（路径、命名空间、采集周期、采集窗口等）
-- 可在 Jenkins 系统管理 → 系统配置 → Build Metrics 配置项中设置
+## Project Structure
+
+```
+src/main/java/org/jenkinsci/plugins/build/
+├── api/                    # REST API endpoints
+│   └── BuildMetricsAction.java
+├── collector/              # Metrics collection logic
+│   └── JobCollector.java
+├── config/                 # Global configuration
+│   └── BuildMetricsConfiguration.java
+├── context/                # Dependency injection
+│   └── Context.java
+├── model/                  # Data models
+│   └── BuildMetricsVO.java
+├── service/                # Service interfaces and implementations
+│   ├── BuildMetrics.java
+│   ├── BuildMetricsAsyncWorker.java
+│   ├── Jobs.java
+│   ├── Runs.java
+│   └── impl/
+│       └── DefaultBuildMetrics.java
+└── util/                   # Utilities
+    └── ConfigurationUtils.java
+```
 
 ---
 
-## API 说明
-- 指标数据接口：`/your_plugin_url/metrics`（具体路径可在全局配置中自定义）
-- 支持 GET 方式访问，返回文本格式指标数据
-- 支持手动采集接口 `/your_plugin_url/collect`，需管理员权限或 API Token
+## Testing
+
+```bash
+mvn test
+```
+
+Uses JUnit 5 + Mockito for comprehensive unit testing.
 
 ---
 
-## 单元测试
-- 使用 JUnit 5 + Mockito，测试代码位于 `src/test/java/`
-- 运行测试：
-```sh
-make test
+## Troubleshooting
+
+### Java Version Error
+
+If you encounter errors like `Unknown Java specification version for class version: 65`, ensure you have **JDK 21+** installed:
+
+```bash
+# Check current Java version
+java -version
+
+# If using SDKMAN
+sdk list java | grep installed
+sdk install java 21.0.2-open
+sdk default java 21.0.2-open
 ```
 
 ---
 
 ## CI/CD
-- 推荐使用 Jenkinsfile 进行自动化构建、归档、邮件通知等
-- 示例流水线见 `Jenkinsfile`
+
+This project includes Jenkinsfiles for automated building:
+
+- `Jenkinsfile` - Standard pipeline with build, archive, and email notification
+- `Jenkinsfile.sonar` - SonarQube static code analysis
 
 ---
 
-## SonarQube 静态代码扫描
-- 推荐使用 Jenkinsfile.sonar 进行 SonarQube 扫描
-- 需在 Jenkins 全局工具配置中设置 jdk17 和 SonarQube 服务器
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a Pull Request
 
 ---
 
-## 常见问题
-- **插件无法加载？** 请确认 Jenkins 版本、JDK 版本与依赖环境一致
-- **API 无法访问？** 检查权限配置与 Jenkins 全局安全设置
-- **采集数据不全？** 检查采集窗口、命名空间等配置项
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
 
 ---
 
-## 贡献方式
-欢迎提交 Issue、PR 或建议！
-1. Fork 本仓库
-2. 新建分支进行开发
-3. 提交 Pull Request
+## Contact
+
+- **Author:** mingsha
+- **Email:** chenlong220192@gmail.com
+- **GitHub:** [Project Repository](https://github.com/chenlong220192/mingsha-jenkins-plugin-build-metrics)
 
 ---
 
-## 联系方式
-- 作者：mingsha
-- 邮箱：chenlong220192@gmail.com
-- GitHub: [项目主页](https://github.com/chenlong220192/mingsha-jenkins-plugin-build-metrics)
-
----
-
-> 本项目遵循 [MIT 许可证](./LICENSE)，欢迎自由使用与二次开发。
+> Feel free to use and develop this plugin!

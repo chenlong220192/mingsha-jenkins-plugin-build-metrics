@@ -6,11 +6,12 @@ import org.jenkinsci.plugins.build.service.impl.DefaultBuildMetrics;
 import org.jenkinsci.plugins.build.service.BuildMetrics;
 
 /**
- * Guice 依赖注入上下文配置。
+ * Guice dependency injection context configuration.
  * <p>
- * 负责将 BuildMetrics 接口绑定到默认实现 DefaultBuildMetrics，
- * 并以单例方式注入到插件各处。
+ * Binds the BuildMetrics interface to its default implementation DefaultBuildMetrics,
+ * and injects it as a singleton throughout the plugin.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
@@ -18,11 +19,10 @@ import org.jenkinsci.plugins.build.service.BuildMetrics;
 public class Context extends AbstractModule {
 
     /**
-     * 配置依赖注入绑定关系。
+     * Configures dependency injection bindings.
      */
     @Override
     public void configure() {
         bind(BuildMetrics.class).to(DefaultBuildMetrics.class).in(com.google.inject.Singleton.class);
     }
-
 }

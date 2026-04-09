@@ -6,43 +6,44 @@ import java.util.Map;
 import hudson.model.*;
 
 /**
- * Jenkins 构建历史工具类。
+ * Utility class for accessing Jenkins build (Run) information.
  * <p>
- * 提供对 Run（构建记录）相关的常用操作方法。
+ * Provides common operations for retrieving build history data.
  * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
+@SuppressWarnings("unchecked")
 public class Runs {
 
     /**
-     * 判断该构建是否应计入指标统计。
+     * Determines if a build should be included in metrics.
      * <p>
-     * 当前逻辑：只要构建不在进行中（isBuilding() 为 false）就计入统计。
-     * 可以根据需要扩展更复杂的过滤条件。
+     * Current logic: builds that are not in progress (isBuilding() returns false)
+     * are included in statistics. Can be extended for more complex filtering.
      * </p>
-     * @param build 构建记录
-     * @return 是否计入统计
+     * @param build the build to evaluate
+     * @return true if the build should be included
      */
     public static boolean includeBuildInMetrics(Run build) {
         boolean include = false;
         if (!build.isBuilding()) {
-            // 构建已完成，计入统计
+            // Build is complete, include in metrics
             include = true;
-            // 获取构建结果（可用于后续扩展过滤条件）
+            // Get build result (can be used for extended filtering)
             Result result = build.getResult();
         }
         return include;
     }
 
     /**
-     * 获取构建对应的 Job 名称。
+     * Extracts the job name from a build's full display name.
      * <p>
-     * 从构建的完整显示名称中提取 Job 名称部分，
-     * 去掉构建号等信息。
+     * Removes build number and other suffixes from the full display name.
      * </p>
-     * @param run 构建记录
-     * @return Job 名称，如果获取失败返回 null
+     * @param run the build run
+     * @return the job name, or null if extraction fails
      */
     public static String getJobNameText(Run run) {
         if (run != null) {
@@ -55,12 +56,12 @@ public class Runs {
     }
 
     /**
-     * 获取构建结果文本。
+     * Returns the build result as a string.
      * <p>
-     * 将构建结果枚举转换为字符串表示。
+     * Converts the build result enum to its string representation.
      * </p>
-     * @param run 构建记录
-     * @return 结果字符串，如 "SUCCESS"、"FAILURE" 等
+     * @param run the build run
+     * @return result string such as "SUCCESS", "FAILURE", etc.
      */
     public static String getResultText(Run run) {
         if (run != null) {
@@ -73,13 +74,13 @@ public class Runs {
     }
 
     /**
-     * 获取触发该构建的用户ID。
+     * Gets the user ID that triggered the build.
      * <p>
-     * 从构建原因中提取用户ID信息。
-     * 目前只支持 UserIdCause 类型的触发原因。
+     * Extracts user ID from build causes.
+     * Currently only supports UserIdCause type.
      * </p>
-     * @param run 构建记录
-     * @return 用户ID，如果无法获取返回 null
+     * @param run the build run
+     * @return the user ID, or null if unavailable
      */
     public static String getRunnerText(Run run) {
         if (run != null) {
@@ -92,13 +93,13 @@ public class Runs {
     }
 
     /**
-     * 获取构建参数列表。
+     * Gets the build parameters as a map.
      * <p>
-     * 从构建的 ParametersAction 中提取所有参数，
-     * 返回参数名到参数值的映射。
+     * Extracts all parameters from ParametersAction and returns
+     * a mapping of parameter names to their values.
      * </p>
-     * @param build 构建记录
-     * @return 参数名到参数值的映射，如果没有参数返回空 Map
+     * @param build the build
+     * @return a map of parameter names to values, or an empty map if no parameters
      */
     public static Map<String, Object> getBuildParameters(Run build) {
         List<ParametersAction> actions = build.getActions(ParametersAction.class);

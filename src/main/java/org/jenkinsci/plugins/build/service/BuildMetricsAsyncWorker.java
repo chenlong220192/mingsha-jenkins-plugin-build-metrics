@@ -14,6 +14,12 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 
 /**
+ * Asynchronous periodic worker for scheduled metrics collection.
+ * <p>
+ * Runs at a configurable interval to collect build metrics automatically.
+ * Uses Jenkins' built-in AsyncPeriodicWork for background task execution.
+ * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
@@ -22,54 +28,53 @@ public class BuildMetricsAsyncWorker extends AsyncPeriodicWork {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildMetricsAsyncWorker.class);
 
-    private BuildMetrics BuildMetrics;
+    private BuildMetrics buildMetrics;
 
     /**
-     * 构造方法，初始化异步采集任务。
+     * Constructor - initializes the async worker with a name.
      */
     public BuildMetricsAsyncWorker() {
         super("build_metrics_async_worker");
     }
 
     /**
-     * 注入 BuildMetrics 实例。
-     * @param BuildMetrics 构建指标服务
+     * Injects the BuildMetrics service instance.
+     * @param buildMetrics the build metrics service
      */
     @Inject
-    public void setBuildMetrics(BuildMetrics BuildMetrics) {
-        this.BuildMetrics = BuildMetrics;
+    public void setBuildMetrics(BuildMetrics buildMetrics) {
+        this.buildMetrics = buildMetrics;
     }
 
     /**
-     * 获取采集任务的执行周期（毫秒）。
-     * @return 周期（毫秒）
+     * Returns the recurrence period for this periodic task in milliseconds.
+     * @return the period in milliseconds
      */
     @Override
     public long getRecurrencePeriod() {
         long collectingMetricsPeriodInMillis =
                 TimeUnit.SECONDS.toMillis(BuildMetricsConfiguration.get().getCollectingBuildMetricsPeriodInSeconds());
-        logger.info("设置采集周期为 {} 毫秒", collectingMetricsPeriodInMillis);
+        logger.info("Setting collection period to {} milliseconds", collectingMetricsPeriodInMillis);
         return collectingMetricsPeriodInMillis;
     }
 
     /**
-     * 执行采集任务。
-     * @param taskListener 任务监听器
+     * Executes the metrics collection task.
+     * @param taskListener the task listener for logging
      */
     @Override
     public void execute(TaskListener taskListener) {
-        logger.info("开始采集 Jenkins 构建信息");
-        BuildMetrics.collectMetrics();
-        logger.info("Jenkins 构建信息采集完成");
+        logger.info("Starting Jenkins build information collection");
+        buildMetrics.collectMetrics();
+        logger.info("Jenkins build information collection completed");
     }
 
     /**
-     * 获取日志级别。
-     * @return 日志级别
+     * Returns the normal logging level for this worker.
+     * @return the logging level (FINE for detailed output)
      */
     @Override
     protected Level getNormalLoggingLevel() {
         return Level.FINE;
     }
-
 }

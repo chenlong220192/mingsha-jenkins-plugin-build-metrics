@@ -8,38 +8,48 @@ import org.jenkinsci.plugins.build.config.BuildMetricsConfiguration;
 import org.jenkinsci.plugins.build.service.BuildMetrics;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import jenkins.model.Jenkins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Jenkins Build Metrics REST API Action.
+ * <p>
+ * Exposes build metrics through HTTP endpoints for external monitoring systems (e.g., Prometheus).
+ * This action provides both metrics retrieval and manual collection trigger endpoints.
+ * </p>
+ *
  * @author mingsha
  * @date 2025-07-10
  */
 @Extension
+@SuppressWarnings("deprecation")
 public class BuildMetricsAction implements UnprotectedRootAction {
 
     private BuildMetrics buildMetrics;
     private static final Logger logger = LoggerFactory.getLogger(BuildMetricsAction.class);
 
     /**
-     * 构造方法，初始化 BuildMetricsAction。
+     * Default constructor.
      */
     public BuildMetricsAction() {}
 
     /**
-     * 设置 BuildMetrics 实例。
-     * @param BuildMetrics 构建指标服务
+     * Injects the BuildMetrics service instance.
+     * @param buildMetrics the build metrics service to inject
      */
     @Inject
-    public void setBuildMetrics(BuildMetrics BuildMetrics) {
-        this.buildMetrics = BuildMetrics;
+    public void setBuildMetrics(BuildMetrics buildMetrics) {
+        this.buildMetrics = buildMetrics;
     }
 
     /**
-     * 获取插件图标文件名（本插件无图标，返回 null）。
-     * @return null
+     * Returns the icon file name for this action.
+     * This plugin does not use a sidebar icon.
+     * @return null (no icon)
      */
     @Override
     public String getIconFileName() {
@@ -47,8 +57,8 @@ public class BuildMetricsAction implements UnprotectedRootAction {
     }
 
     /**
-     * 获取插件显示名称。
-     * @return 显示名称
+     * Returns the display name shown in Jenkins UI.
+     * @return the display name
      */
     @Override
     public String getDisplayName() {
@@ -56,8 +66,9 @@ public class BuildMetricsAction implements UnprotectedRootAction {
     }
 
     /**
-     * 获取插件 URL 名称。
-     * @return URL 名称
+     * Returns the URL name for this action.
+     * The URL is configured via BuildMetricsConfiguration.
+     * @return the URL name
      */
     @Override
     public String getUrlName() {
@@ -65,9 +76,10 @@ public class BuildMetricsAction implements UnprotectedRootAction {
     }
 
     /**
-     * 动态处理 REST 路由。
-     * @param request 请求对象
-     * @return 响应对象
+     * Handles dynamic REST routing for metrics retrieval.
+     * Endpoint: /{urlName}/{additionalPath}
+     * @param request the Stapler request
+     * @return HTTP response
      */
     public HttpResponse doDynamic(StaplerRequest request) {
         if (request.getRestOfPath().equals(BuildMetricsConfiguration.get().getAdditionalPath())) {
@@ -80,9 +92,13 @@ public class BuildMetricsAction implements UnprotectedRootAction {
     }
 
     /**
-     * 手动触发一次构建指标采集。
-     * 访问路径：/your_plugin_url/collect
-     * 仅支持 Jenkins 用户（如管理员）通过 API Token 认证访问。
+     * Manually triggers a metrics collection.
+     * <p>
+     * Endpoint: /{urlName}/collect
+     * Requires Jenkins ADMINISTER permission or valid API Token authentication.
+     * </p>
+     * @param request the Stapler request
+     * @return HTTP response indicating success or failure
      */
     public HttpResponse doCollect(StaplerRequest request) {
         if (!hasJenkinsPermission()) {
@@ -92,18 +108,18 @@ public class BuildMetricsAction implements UnprotectedRootAction {
             buildMetrics.collectMetrics();
             return HttpResponses.ok();
         } catch (Exception e) {
-            logger.error("手动采集构建指标失败", e);
-            return HttpResponses.error(500, "采集失败: " + e.getMessage());
+            logger.error("Failed to collect build metrics manually", e);
+            return HttpResponses.error(500, "Collection failed: " + e.getMessage());
         }
     }
 
     /**
-     * 校验 Jenkins 权限（如 ADMINISTER）。
-     * @return 是否有权限
+     * Checks if the current user has Jenkins ADMINISTER permission.
+     * @return true if user has ADMINISTER permission, false otherwise
      */
     private boolean hasJenkinsPermission() {
         try {
-            return jenkins.model.Jenkins.get().hasPermission(jenkins.model.Jenkins.ADMINISTER);
+            return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
         } catch (Exception ignore) {
             // ignore exception, just return false
             return false;
@@ -111,22 +127,29 @@ public class BuildMetricsAction implements UnprotectedRootAction {
     }
 
     /**
-     * 判断是否有访问权限（当前实现始终返回 true）。
-     * @return 是否有权限
+     * Checks if the current user has access to view metrics.
+     * Requires either ADMINISTER or READ permission.
+     * @return true if access is allowed, false otherwise
      */
     private boolean hasAccess() {
-        return true;
+        try {
+            Jenkins jenkins = Jenkins.get();
+            return jenkins.hasPermission(Jenkins.ADMINISTER)
+                || jenkins.hasPermission(Jenkins.READ);
+        } catch (Exception ignore) {
+            return false;
+        }
     }
 
     /**
-     * 构建指标数据响应。
-     * @return HttpResponse
+     * Builds the metrics HTTP response with JSON data.
+     * @return the HTTP response containing metrics data
      */
     private HttpResponse buildInfoResponse() {
         return new HttpResponse() {
             @Override
-            public void generateResponse(org.kohsuke.stapler.StaplerRequest request, org.kohsuke.stapler.StaplerResponse response, Object node) throws IOException {
-                response.setStatus(org.kohsuke.stapler.StaplerResponse.SC_OK);
+            public void generateResponse(StaplerRequest request, StaplerResponse response, Object node) throws IOException {
+                response.setStatus(StaplerResponse.SC_OK);
                 response.setContentType("text/plain; version=0.0.4; charset=utf-8");
                 response.addHeader("Cache-Control", "must-revalidate,no-cache,no-store");
                 response.getWriter().write(buildMetrics.getMetrics());

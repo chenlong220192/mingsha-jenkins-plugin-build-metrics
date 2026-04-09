@@ -10,34 +10,36 @@
     </parent>
 
     <artifactId>mingsha-jenkins-plugin-build-metrics</artifactId>
-    <version>1.1.0</version>
+    <version>2026.04.09</version>
     <packaging>hpi</packaging>
     <name>mingsha Job build metrics</name>
     <description>Expose Jenkins Job build metrics in text format</description>
     <url>https://github.com/chenlong220192/mingsha-jenkins-plugin-build-metrics</url>
-    <inceptionYear>2025</inceptionYear>
+    <inceptionYear>2026</inceptionYear>
 
     <properties>
-        <jenkins.version>2.501</jenkins.version>
+        <jenkins.version>2.558</jenkins.version>
         <java.version>17</java.version>
-        <slf4j.version>2.0.17</slf4j.version>
-        <fastjson2.version>2.0.56</fastjson2.version>
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
-        <mockito.version>5.2.0</mockito.version>
-        <plugin.parent.version>5.9</plugin.parent.version>
-        <bom-2.387.x.version>2543.vfb_1a_5fb_9496d</bom-2.387.x.version>
-        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <maven.hpi.plugin.version>3.44</maven.hpi.plugin.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <fastjson2.version>2.0.58</fastjson2.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <mockito.version>5.14.2</mockito.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.387.x</artifactId>
-                <version>${bom-2.387.x.version}</version>
+                <artifactId>bom-2.555.x</artifactId>
+                <version>6237.v4da_61a_4a_19e5</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci</groupId>
+                <artifactId>version-number</artifactId>
+                <version>1.14</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -55,6 +57,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -66,6 +69,21 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jenkins-ci.tools</groupId>
+                    <artifactId>maven-hpi-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jenkins-ci</groupId>
+                            <artifactId>version-number</artifactId>
+                            <version>1.14</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -75,11 +93,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jenkins-ci.tools</groupId>
-                <artifactId>maven-hpi-plugin</artifactId>
-                <version>${maven.hpi.plugin.version}</version>
             </plugin>
         </plugins>
     </build>
