@@ -67,3 +67,6 @@ workspace/
 # === Others ===
 *.orig
 *.rej
+
+# AI agent
+.claude
